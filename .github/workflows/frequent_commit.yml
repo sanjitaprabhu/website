@@ -1,0 +1,37 @@
+name: Frequent Commit
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  update-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for proper merging
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Pull latest changes
+        continue-on-error: true
+        run: git pull --rebase || true
+
+      - name: Make changes
+        run: echo "Frequent commit on $(date)" >> frequent_commit.txt
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "Frequent commit on $(date)" || echo "No changes to commit"
+          git push origin main || echo "No changes to push"
